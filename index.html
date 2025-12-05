@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MindSpark | AI Study Assistant</title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+</head>
+<body>
+
+<div class="container">
+    <aside class="sidebar">
+        <div class="user-profile">
+            <div class="avatar">🎓</div>
+            <h2>Student</h2>
+            <span class="level-badge" id="user-level">Level 1 Novice</span>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-item">
+                <span class="stat-label">Total XP</span>
+                <span class="stat-value" id="xp-display">0</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Streak</span>
+                <span class="stat-value">🔥 <span id="streak-display">0</span> days</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Items Created</span>
+                <span class="stat-value" id="items-display">0</span>
+            </div>
+        </div>
+        
+        <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid #e2e8f0;">
+        
+        <div style="text-align: center; color: var(--text-muted); font-size: 0.8rem;">
+            <p>"Success is the sum of small efforts repeated day in and day out."</p>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header>
+            <!--
+            <div class="logo-section">
+                <img src="assets/images/10.png" alt="MindSpark Logo">
+            </div>
+            -->
+            
+            <h1>MindSpark</h1>
+            <p style="color: var(--text-muted);">Paste your notes below and let AI transform your study routine.</p>
+        </header>
+
+        <section class="input-card">
+            <textarea id="user-input" placeholder="Paste your lecture notes, textbook paragraphs, or essay draft here..."></textarea>
+            
+            <div class="toolbar">
+                <label class="file-upload-label">
+                    <input type="file" id="file-upload" accept=".txt" style="display: none;">
+                    📎 Upload .txt file
+                </label>
+                <span id="char-count" style="color: var(--text-muted); font-size: 0.9rem;">0 chars</span>
+            </div>
+        </section>
+
+        <section class="actions-grid">
+            <button class="action-btn btn-summary" onclick="generateContent('summary')">
+                <span>📝</span> Study Summary
+            </button>
+            <button class="action-btn btn-cards" onclick="generateContent('flashcards')">
+                <span>🗂️</span> Flashcards
+            </button>
+            <button class="action-btn btn-quiz" onclick="generateContent('quiz')">
+                <span>❓</span> Generate Quiz
+            </button>
+            <button class="action-btn btn-eli5" onclick="generateContent('eli5')">
+                <span>👶</span> Explain Like I'm 5
+            </button>
+        </section>
+
+        <div class="loader" id="loader"></div>
+        <section id="output-area"></section>
+    </main>
+</div>
+
+<script src="/assets/script/Mind-Spark.js"></script>
+
+</body>
+</html>
