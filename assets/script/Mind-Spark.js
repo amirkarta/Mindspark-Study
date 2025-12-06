@@ -55,53 +55,30 @@
         reader.readAsText(file);
     });
 
-    /* --- 3. MOCK AI ENGINE (Simulates Backend) --- */
-    // In a real app, replace `simulateAIResponse` with a fetch() call to OpenAI/Anthropic
+    /* --- 3. AI ENGINE (Real Backend API) --- */
+    const API_BASE_URL = 'http://localhost:3000';
     
     async function simulateAIResponse(text, mode) {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                let response;
-                const sentences = text.split('.').filter(s => s.length > 10);
-                
-                switch(mode) {
-                    case 'summary':
-                        response = {
-                            title: "Key Takeaways",
-                            content: `Here is a concise summary of your notes:\n\n• ${sentences[0] || 'No content'}.\n• ${sentences[1] || 'Add more text for better results'}.\n• ${sentences[sentences.length-1] || 'Conclusion'}.`
-                        };
-                        break;
-                    case 'eli5':
-                        response = {
-                            title: "Simply Put",
-                            content: `Imagine this like a Lego set. ${sentences[0] ? sentences[0].toLowerCase() : 'It'} is basically the main block. When you put it together, it works because... (AI simplified logic would go here).`
-                        };
-                        break;
-                    case 'flashcards':
-                        // Create mock cards from sentences
-                        response = sentences.slice(0, 4).map((s, i) => ({
-                            front: `Concept #${i + 1} from text`,
-                            back: s.trim()
-                        }));
-                        break;
-                    case 'quiz':
-                        response = [
-                            {
-                                question: "What is the main concept discussed in the first paragraph?",
-                                options: ["The first sentence", "Something irrelevant", "A wrong answer", "Another wrong answer"],
-                                correct: 0
-                            },
-                            {
-                                question: "Which of the following is implied by the text?",
-                                options: ["Option A", "Option B", "Option C", "The text implies this"],
-                                correct: 3
-                            }
-                        ];
-                        break;
-                }
-                resolve(response);
-            }, 1500); // Simulate network delay
-        });
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/${mode}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error(`Error calling API for mode '${mode}':`, error);
+            throw error;
+        }
     }
 
     /* --- 4. CORE LOGIC --- */
@@ -118,25 +95,41 @@
         outputArea.innerHTML = '';
         loader.style.display = 'block';
 
-        // Get Data
-        const data = await simulateAIResponse(text, mode);
-        
-        // Hide Loader
-        loader.style.display = 'none';
+        try {
+            // Get Data
+            const data = await simulateAIResponse(text, mode);
+            
+            // Hide Loader
+            loader.style.display = 'none';
 
-        // Render based on mode
-        if (mode === 'summary' || mode === 'eli5') {
-            renderTextResult(data.title, data.content);
-        } else if (mode === 'flashcards') {
-            renderFlashcards(data);
-        } else if (mode === 'quiz') {
-            renderQuiz(data);
+            // Render based on mode
+            if (mode === 'summary' || mode === 'eli5') {
+                renderTextResult(data.title, data.content);
+            } else if (mode === 'flashcards') {
+                renderFlashcards(data);
+            } else if (mode === 'quiz') {
+                renderQuiz(data);
+            }
+
+            // Gamification Update
+            userState.xp += 20;
+            userState.itemsCreated += 1;
+            saveState();
+        } catch (error) {
+            // Hide Loader
+            loader.style.display = 'none';
+
+            // Display error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'result-card';
+            errorDiv.style.borderLeft = '4px solid #ff6b6b';
+            errorDiv.innerHTML = `
+                <h3 style="color: #ff6b6b; margin-bottom:0.5rem;">⚠️ Error</h3>
+                <p>${error.message}</p>
+                <small style="color: #666;">Make sure the backend server is running on port 3000 and your OpenAI API key is configured.</small>
+            `;
+            outputArea.appendChild(errorDiv);
         }
-
-        // Gamification Update
-        userState.xp += 20;
-        userState.itemsCreated += 1;
-        saveState();
     }
 
     /* --- 5. RENDER FUNCTIONS --- */
